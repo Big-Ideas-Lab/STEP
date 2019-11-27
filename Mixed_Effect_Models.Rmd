@@ -1,0 +1,145 @@
+---
+title: "Fullmixedeffectsmodel"
+author: "BrinnaeBent"
+date: "September 16, 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#This file looks models the interactions between skin tone, device, device type, and activity condition. 
+
+#Input: File from Import_Raw_Data_Merge.csv
+#Output: Mixed Effects Models and Interaction Model for STEP Analysis
+
+```{r}
+df <- read.csv("filepath\\STEP_A2.csv", header=FALSE, stringsAsFactors = FALSE)
+colnames(df) <- c("ID", "Timestamp", "ECGHR", "WSHR", "Diff", "Device", "Type", "Condition", "FST")
+
+```
+#Mixed Model all variables
+
+```{r}
+
+# Model for All variables 
+library(lme4)
+
+model = lmer(Diff ~ FST + Device + Condition + Type + (1|ID), data=df, REML=FALSE)
+model.null = lmer(Diff ~ 1 + (1|ID), data=df, REML=FALSE)
+
+summary(model)
+#summary(model.null)
+anovatotal = anova(model.null, model)
+print(anovatotal)
+
+library(lmerTest)
+
+#lrtest(model, model.null)
+
+
+```
+
+#Mixed Model Skin Tone only
+
+```{r}
+
+# Model for FST 
+library(lme4)
+
+modelFST = lmer(Diff ~ FST + (1|ID), data=df, REML=FALSE)
+model.nullFST = lmer(Diff ~ 1 + (1|ID), data=df, REML=FALSE)
+
+summary(modelFST)
+summary(model.nullFST)
+anovaFST = anova(model.nullFST, modelFST)
+print(anovaFST)
+
+```
+
+# Mixed Model Activity Condition Only
+
+```{r}
+
+# Model for Condition (Walking, Rest, Typing, Deep Breathing)
+library(lme4)
+
+modelC = lmer(Diff ~ Condition + (1|ID), data=df, REML=FALSE)
+model.nullC = lmer(Diff ~ 1 + (1|ID), data=df, REML=FALSE)
+
+summary(modelC)
+summary(model.nullC)
+anovaC = anova(model.nullC, modelC)
+print(anovaC)
+```
+
+#Mixed Model for Device
+
+```{r}
+
+# Model for Device (Apple Watch, Fitbit, Garmin, Biovotion, Empatica, Xiaomi Miband)
+library(lme4)
+
+modelD = lmer(Diff ~ Device + (1|ID), data=df, REML=FALSE)
+model.nullD = lmer(Diff ~ 1 + (1|ID), data=df, REML=FALSE)
+
+summary(modelD)
+summary(model.nullD)
+anovaD = anova(model.nullD, modelD)
+print(anovaD)
+```
+
+#Mixed Model for Consumer vs. Research Type
+
+```{r}
+
+# Model for Type (Consumer or Research)
+library(lme4)
+
+modelT = lmer(Diff ~ Type + (1|ID), data=df, REML=FALSE)
+model.nullT = lmer(Diff ~ 1 + (1|ID), data=df, REML=FALSE)
+
+summary(modelT)
+summary(model.nullT)
+anovaT = anova(model.nullD, modelT)
+print(anovaT)
+```
+
+# Compare ANOVA for individual models and full model
+
+```{r}
+print('Anova Total Model p-value = ') 
+print(anovatotal$`Pr(>Chisq)`[2])
+
+print('Anova Skin Tone Model p-value = ')
+print(anovaFST$`Pr(>Chisq)`[2])
+
+print('Anova Condition (Walk, Rest, Type, Deep Breathe) Model p-value = ')
+print(anovaC$`Pr(>Chisq)`[2])
+
+print('Anova Device (Apple Watch, Fitbit, Miband, Garmin, Biovotion, Empatica) Model p-value = ')
+print(anovaD$`Pr(>Chisq)`[2])
+
+print('Anova Type of Device (Consumer, Research) Model p-value = ')
+print(anovaT$`Pr(>Chisq)`[2])
+```
+
+# Interaction Model between Skin Tone and Device
+
+```{r}
+
+library(lme4)
+library(lmtest)
+
+modelI = lmer(Diff ~ FST*Device + (1|ID), data=df, REML=FALSE)
+modelI2 = lmer(Diff ~ FST + Device + (1|ID), data=df, REML=FALSE)
+
+lrtest(modelI, modelI2)
+
+#model.nullI = lmer(Diff ~ 1 + (1|ID), data=df, REML=FALSE)
+summary(modelI)
+#summary(model.nullI)
+#anovaI = anova(model.nullI, modelI)
+#print(anovaI)
+```

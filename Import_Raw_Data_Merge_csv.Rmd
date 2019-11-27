@@ -1,0 +1,237 @@
+---
+title: "DataMergeParticipant"
+author: "BrinnaeBent"
+date: "September 19, 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Function that Imports all HR data for activities (rest, walking, deep breathing, and typeing) from each of the devices (ECG, Apple Watch, Fitbit, Garmin, Miband, Biovotion), lines up corresponding timestamps, and assigns each value with the corresponding ID and Skin Tone.
+
+
+```{r}
+BaselineAnalysis <- function(subid, dateof, ST){
+
+  #Inputs to Function:
+  #ID of participant
+  #Date of experiment (**Issue- would like to update so it pulls this from file)
+  #Participant skin tone (**Issue- would like to update so it pulls this from file)
+  
+  #Outputs to Function:
+  #.csv file with all timestamps for every participant in the study, which has all devices used in the study, skin tone, activity condition, and participant ID
+  
+  #Set filepath of folder with all subject data 
+  filepath = sprintf("filepath\\%s", subid) #<- make sure to keep %s after filepath!
+  
+  library(dplyr)
+  #Set filepath to file with all timestamps from study
+  timedata <- read.csv("filepath\\skintonestudyTIMES.csv", header=TRUE, stringsAsFactors = FALSE)
+  
+  #If you get an error when running the following line, please re-install dplyr and re-start your R environment
+  
+  idtime <- filter(timedata, timedata$ï..Subject.ID==subid)
+  
+  Times <- data.frame(matrix())
+  
+ #REST
+  Times$R1 <- as.numeric(strptime(as.character(idtime$Baseline.Start.1), format='%m/%d/%Y %H:%M:%S'))
+  Times$R2 <- as.numeric(strptime(as.character(idtime$Baseline.Start.2), format='%m/%d/%Y %H:%M:%S'))
+  Times$R3 <- as.numeric(strptime(as.character(idtime$Baseline.Start.3), format='%m/%d/%Y %H:%M:%S'))
+  
+  #ACTIVITY
+  Times$A1 <- as.numeric(strptime(as.character(idtime$Activity.Start.1), format='%m/%d/%Y %H:%M:%S'))
+  Times$A2 <- as.numeric(strptime(as.character(idtime$Activity.Start.2), format='%m/%d/%Y %H:%M:%S'))
+  Times$A3 <- as.numeric(strptime(as.character(idtime$Activity.Start.3), format='%m/%d/%Y %H:%M:%S'))
+  
+  #DEEP BREATHING
+  Times$B1 <- as.numeric(strptime(as.character(idtime$DB.Start.1), format='%m/%d/%Y %H:%M:%S'))
+  Times$B2 <- as.numeric(strptime(as.character(idtime$DB.Start.2), format='%m/%d/%Y %H:%M:%S'))
+  Times$B3 <- as.numeric(strptime(as.character(idtime$DB.Start.3), format='%m/%d/%Y %H:%M:%S'))
+  
+  #TYPEING
+  Times$T1 <- as.numeric(strptime(as.character(idtime$Type.Start.1), format='%m/%d/%Y %H:%M:%S'))
+  Times$T2 <- as.numeric(strptime(as.character(idtime$Type.Start.2), format='%m/%d/%Y %H:%M:%S'))
+  Times$T3 <- as.numeric(strptime(as.character(idtime$Type.Start.3), format='%m/%d/%Y %H:%M:%S'))
+  
+  Times$R1 = as.POSIXct(round(as.numeric(Times$R1)), origin = "1970-01-01")
+  Times$R2 = as.POSIXct(round(as.numeric(Times$R2)), origin = "1970-01-01")
+  Times$R3 = as.POSIXct(round(as.numeric(Times$R3)), origin = "1970-01-01")
+  Times$A1 = as.POSIXct(round(as.numeric(Times$A1)), origin = "1970-01-01")
+  Times$A2 = as.POSIXct(round(as.numeric(Times$A2)), origin = "1970-01-01")
+  Times$A3 = as.POSIXct(round(as.numeric(Times$A3)), origin = "1970-01-01")
+  Times$B1 = as.POSIXct(round(as.numeric(Times$B1)), origin = "1970-01-01")
+  Times$B2 = as.POSIXct(round(as.numeric(Times$B2)), origin = "1970-01-01")
+  Times$B3 = as.POSIXct(round(as.numeric(Times$B3)), origin = "1970-01-01")
+  Times$T1 = as.POSIXct(round(as.numeric(Times$T1)), origin = "1970-01-01")
+  Times$T2 = as.POSIXct(round(as.numeric(Times$T2)), origin = "1970-01-01")
+  Times$T3 = as.POSIXct(round(as.numeric(Times$T3)), origin = "1970-01-01")
+
+  
+  #Import ECG HR
+  
+  mydate = strptime(dateof,format='%Y-%m-%d')
+  datenum <- as.numeric(mydate)
+  
+  #Import HR data from Kubios
+  HR <- read.csv(sprintf("%s\\HR.csv", filepath), header=FALSE)
+  HRT <- read.csv(sprintf("%s\\HRT.csv", filepath), header=FALSE)
+  HRT <- round((HRT)+datenum)
+  
+  ECG <- data.frame(HRT, HR)
+  colnames(ECG) <- c("Time", "ECG")
+  
+  ECG$Time = as.POSIXct(round(as.numeric(ECG$Time)), origin = "1970-01-01")
+  
+  
+  #IMPORT Empatica HR
+  
+  E4 <- read.csv(sprintf("%s\\Empatica\\HR.csv", filepath), header=FALSE, stringsAsFactors=FALSE)
+  E4starttime <- E4[1,]
+  E4 <- E4[-c(1,2), ]
+  
+  secondspassedE4 <- length(E4)/1
+  E4endtime <- E4starttime + secondspassedE4
+  E4Time <- as.numeric(seq(from=E4starttime, to=E4endtime, length.out=length(E4)))
+  
+  E4 <- data.frame(E4Time, E4)
+  colnames(E4) <- c("Time", "Empatica")
+  
+  E4$Time = as.POSIXct(round(as.numeric(E4$Time)), origin = "1970-01-01")
+  
+  rm(E4starttime, secondspassedE4, E4endtime, E4Time)
+  
+  #IMPORT Apple Watch HR
+  
+  AW <- read.csv(sprintf("%s\\Apple Watch.csv", filepath), header=FALSE, stringsAsFactors=FALSE)
+  AWstarttime <- AW[1,2]
+  AWstarttime <- as.numeric(as.POSIXct(AWstarttime))
+  AppleHR <- as.numeric(AW[-c(1:7),2])
+  Applesec <- as.numeric(AW[-c(1:7),1])+AWstarttime
+  
+  AppleWatch <- data.frame(Applesec, AppleHR)
+  colnames(AppleWatch) <- c("Time", "AppleWatch")
+  
+  AppleWatch$Time = as.POSIXct(round(as.numeric(AppleWatch$Time)), origin = "1970-01-01")
+  
+  rm(AW, AWstarttime, AppleHR, Applesec)
+  
+  #IMPORT Fitbit HR
+  
+  FB <- read.csv(sprintf("%s\\Fitbit.csv", filepath), header=FALSE, stringsAsFactors = FALSE)
+  FBHR <- as.numeric(FB[-c(1), 2])
+  FBtime <- FB[-c(1),1]
+  
+  Date <- rep(as.POSIXct(dateof), length(FBtime))
+  
+  FBdt <- paste(Date, FBtime)
+  
+  FBdt <- as.numeric(as.POSIXct(FBdt, format="%Y-%m-%d %H:%M:%S"))
+  
+  Fitbit <- data.frame(FBdt, FBHR)
+  colnames(Fitbit) <- c("Time", "Fitbit")
+  
+  Fitbit$Time = as.POSIXct(round(as.numeric(Fitbit$Time)), origin = "1970-01-01")
+  
+  rm(FB, FBHR, FBtime, Date, FBdt)
+  
+  #IMPORT Garmin HR
+  
+  require(XML)
+  require(reshape)
+  library(parsedate)
+  
+   if(file.exists(sprintf("%s\\garmin.tcx", filepath))){
+    mapData <- xmlParse(sprintf("%s\\garmin.tcx", filepath))
+    #Import raw TCX to dataframe. This will be used to generate map data
+    GM <- xmlToDataFrame(nodes <- getNodeSet(mapData, "//ns:Trackpoint", "ns"))
+    GMtime <- unlist(GM$Time)
+    garmint <- as.numeric(parse_date(GMtime))
+    garminhr <- as.numeric(as.matrix(GM$HeartRateBpm))
+    Garmin <- data.frame(garmint, garminhr)
+    rm(mapData, GM, GMtime, garmint, garminhr, nodes)
+    } else {
+      garmint <- NA
+      garminhr <- NA
+      Garmin <- data.frame(garmint, garminhr)}
+  colnames(Garmin) <- c("Time", "Garmin")
+  
+  Garmin$Time = as.POSIXct(round(as.numeric(Garmin$Time)), origin = "1970-01-01")
+  
+  #IMPORT Miband HR
+  
+  library("readxl")
+  
+    if(file.exists(sprintf("%s\\Miband.xls", filepath))){
+    MB <- read_excel(sprintf("%s\\Miband.xls", filepath))
+    MBHR <- MB[1]
+    MBtime <- MB[2]/1000
+    options(scipen = 1)
+    Miband <- data.frame(MBtime, MBHR)
+    rm(MB, MBHR, MBtime)
+    } else {
+      Heart.rate <- NA
+      Timestamp <- NA
+      Miband <- data.frame(Timestamp, Heart.rate)}
+  colnames(Miband) <- c("Time", "Miband")
+  
+   Miband$Time = as.POSIXct(round(as.numeric(Miband$Time)), origin = "1970-01-01")
+
+  #IMPORT Biovotion HR
+  
+  if(file.exists(sprintf("%s\\Biovotion\\BHR.csv", filepath))){
+    BV <- read.csv(sprintf("%s\\Biovotion\\BHR.csv", filepath), header=TRUE, stringsAsFactors = FALSE)
+    Time <- BV$Timestamp
+    HR <- BV$Value
+    Biovotion <- data.frame(Time, HR)
+    rm(BV, Time, HR)
+    } else {
+      Time <- NA
+      HR <- NA
+      Biovotion <- data.frame(Time, HR)}
+  colnames(Biovotion) <- c("Time", "Biovotion")
+  
+  Biovotion$Time = as.POSIXct(round(as.numeric(Biovotion$Time)), origin = "1970-01-01")
+  
+  #Merge all data by timestamps. Keep all timestamps.
+  r1 <-merge(ECG, AppleWatch, all=T)
+  r2 <-merge(r1, E4, by="Time", all=T)
+  r3 <-merge(r2, Garmin, by="Time", all=T)
+  r4 <-merge(r3, Fitbit, by="Time", all=T)
+  r5 <-merge(r4, Miband, by="Time", all=T)
+  result <-merge(r5, Biovotion, by="Time", all=T)
+  
+  rm(r1, r2, r3, r4, r5)
+  
+  result$ID <- subid
+  result$ST <- ST
+  
+  #Define Condition as Rest, Activity (Walking), Breathe (Deep Breathing), and Typeing (Type)
+
+  result$Condition[between(result$Time,Times$A1,Times$A1+300)] <- "Activity"
+  result$Condition[between(result$Time,Times$A2,Times$A2+300)] <- "Activity"
+  result$Condition[between(result$Time,Times$A3,Times$A3+300)] <- "Activity"
+  result$Condition[between(result$Time,Times$R1,Times$R1+240)] <- "Rest"
+  result$Condition[between(result$Time,Times$R2,Times$R2+240)] <- "Rest"
+  result$Condition[between(result$Time,Times$R3,Times$R3+240)] <- "Rest"
+  result$Condition[between(result$Time,Times$B1,Times$B1+60)] <- "Breathe"
+  result$Condition[between(result$Time,Times$B2,Times$B2+60)] <- "Breathe"
+  result$Condition[between(result$Time,Times$B3,Times$B3+60)] <- "Breathe"
+  result$Condition[between(result$Time,Times$T1,Times$T1+60)] <- "Type"
+  result$Condition[between(result$Time,Times$T2,Times$T2+60)] <- "Type"
+  result$Condition[between(result$Time,Times$T3,Times$T3+60)] <- "Type"
+    
+# Write to large .csv that contains all data for all participants
+write.table(result, file = "filename.csv", sep = ",", append = TRUE, quote = FALSE, col.names = FALSE, row.names = FALSE)
+}
+```
+
+```{r}
+#Run function for all participants:
+BaselineAnalysis('19-###', '2019-##-##', #)
+
+```
+
+

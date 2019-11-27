@@ -1,0 +1,418 @@
+---
+title: "NDMPaperFigures"
+author: "BrinnaeBent"
+date: "September 5, 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+# Baseline Figure (2A)
+
+```{r}
+library(ggplot2)
+
+cdf <- read.csv('figuredata_baseline.csv', header=TRUE, stringsAsFactors = FALSE)
+
+cols = c("#ffdbac","#f1c27d","#e0ac69","#c68642","#7e4d1c","#3e2b13")
+
+cdf$WS <- factor(cdf$WS, levels=c("Apple Watch", "Fitbit", "Garmin","Miband", "Empatica", "Biovotion"))
+levels(cdf$WS) <- gsub(" ", "\n", levels(cdf$WS))
+cdf$Fitzpatrick <- as.factor(cdf$Fitzpatrick)
+
+ggplot(cdf, aes(x=WS, y=Mean, fill=Fitzpatrick, colour=Fitzpatrick)) + 
+  geom_point(size=7, alpha=0.8)+ 
+  scale_colour_manual(values = cols)+ scale_fill_manual(values = cols)+
+  theme_bw(base_size = 15)+
+  theme(panel.grid.minor = element_blank(),panel.grid.major = element_blank())+ 
+  geom_hline(yintercept = 0, color="green")+ 
+  theme(axis.title.x=element_blank())+ 
+  #theme(legend.position="right", legend.direction = "vertical")+
+  theme(legend.position = "none") +
+  guides(colour = guide_legend(ncol = 1))+
+  labs(y=expression(atop(bold("MDE: Rest(bpm)"), paste(bold("ECG"[HR]*"-Wearable"[HR]*"")))))+
+  theme(plot.margin=unit(c(1,1,1,1), "cm"))+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))+
+theme(axis.text.x=element_text(size=15,  family = "sans"), axis.text.y=element_text(size=15, face="bold", family = "sans"), axis.title.y=element_text(size=22, face="bold", family = "sans"), text=element_text(size=15, face="bold", family = "sans"))
+
+#+ geom_errorbar(aes(ymin=Mean-Error, ymax=Mean+Error, x=WS), size=.8, width=0.3)
+#,breaks=seq(-30,20,5)
+
+ggsave('filename', plot=last_plot(), device='png', height = 5.7 , width = 5.3)
+```
+
+# Activity Figure (2B)
+
+```{r}
+library(ggplot2)
+
+cdf <- read.csv('figuredata_activity.csv', header=TRUE, stringsAsFactors = FALSE)
+
+cols = c("#ffdbac","#f1c27d","#e0ac69","#c68642","#7e4d1c","#3e2b13")
+
+cdf$WS <- factor(cdf$WS, levels=c("Apple Watch", "Fitbit", "Garmin","Miband", "Empatica", "Biovotion"))
+levels(cdf$WS) <- gsub(" ", "\n", levels(cdf$WS))
+cdf$Fitzpatrick <- as.factor(cdf$Fitzpatrick)
+
+ggplot(cdf, aes(x=WS, y=Mean, fill=Fitzpatrick, colour=Fitzpatrick)) + 
+  geom_point(size=7, alpha=0.8)+ 
+  scale_colour_manual(values = cols)+ scale_fill_manual(values = cols)+
+  theme_bw(base_size = 15)+
+  theme(panel.grid.minor = element_blank(),panel.grid.major = element_blank())+ 
+  geom_hline(yintercept = 0, color="green")+ 
+  theme(axis.title.x=element_blank())+ 
+  #theme(legend.position="right", legend.direction = "vertical")+
+  theme(legend.position = "none") +
+  guides(colour = guide_legend(ncol = 1))+
+  labs(y=expression(atop(bold("MDE:Activity(bpm)"), paste(bold("ECG"[HR]*"-Wearable"[HR]*"")))))+
+  theme(plot.margin=unit(c(1,1,1,1), "cm"))+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))+
+theme(axis.text.x=element_text(size=15,  family = "sans"), axis.text.y=element_text(size=15, face="bold", family = "sans"), axis.title.y=element_text(size=22, face="bold", family = "sans"), text=element_text(size=15, face="bold", family = "sans"))
+
+#+ geom_errorbar(aes(ymin=Mean-Error, ymax=Mean+Error, x=WS), size=.8, width=0.3)
+#,breaks=seq(-40,30,5)
+
+
+ggsave('filename', plot=last_plot(), device='png', height = 5.7 , width = 5.3)
+```
+
+
+# HRV Figure (3)
+
+```{r}
+library(ggplot2)
+
+hdf <- read.csv('figuredata_hrv.csv', header=TRUE, stringsAsFactors = FALSE)
+
+cols = c("#ffdbac","#f1c27d","#e0ac69","#c68642","#7e4d1c","#3e2b13")
+
+hdf$Var <- factor(hdf$Var, levels=c("pNN50", "SDNN", "RMSSD", "Max HRV", "Min HRV","Mean HRV"))
+hdf$Fitzpatrick <- as.factor(hdf$Fitzpatrick)
+
+ggplot(hdf, aes(x=Mean, y=Var, fill=Fitzpatrick, colour=Fitzpatrick)) + geom_point(size=7)+
+  geom_errorbarh(aes(xmin=Mean-Error, xmax=Mean+Error, y=Var), size=.8, height=0.4)+ scale_colour_manual(values = cols)+ scale_fill_manual(values = cols)+theme_bw(base_size=15)+theme(panel.grid.minor = element_blank(),panel.grid.major = element_blank())+ geom_vline(xintercept = 0, color="green")+ theme(axis.title.y=element_blank())+ theme(legend.position="bottom", legend.direction = "horizontal")+ guides(colour = guide_legend(nrow = 1))+ scale_x_continuous(name="Error from ECG HRV Metric")+theme(text=element_text(size=16, face="bold", family = "sans")) +
+  theme(axis.text.x=element_text(size=15,  family = "sans"), axis.text.y=element_text(size=15, face="bold", family = "sans"), axis.title.x=element_text(size=18, face="bold", family = "sans"), text=element_text(size=15, face="bold", family = "sans"))
+
+ggsave('filename', plot=last_plot(), device='png')
+
+```
+
+
+# Activity vs. Baseline (4)
+
+```{r}
+
+library(ggplot2)
+
+hdf <- read.csv('figuredata_activitybaseline.csv', header=TRUE, stringsAsFactors = FALSE)
+
+cols = c("#FF4500","#008080")
+
+hdf$Device <- factor(hdf$Device, levels=c("Apple Watch", "Fitbit", "Garmin","Miband", "Empatica", "Biovotion"))
+levels(hdf$Device) <- gsub(" ", "\n", levels(hdf$Device))
+
+g1 <- ggplot(hdf, aes(x=Device, y=Mean, fill=Activity, colour=Activity)) +
+  geom_point(size=7)+
+  geom_errorbar(aes(ymin=Mean-Error, ymax=Mean+Error, x=Device), size=.8, width=0.2)+
+  scale_colour_manual(values = cols)+ scale_fill_manual(values = cols)+
+  theme_bw()+
+  theme(panel.grid.minor = element_blank(),panel.grid.major = element_blank())+
+  geom_hline(yintercept = 0, color="green")+
+  theme(axis.title.x=element_blank())+
+  #theme(legend.position="right", legend.direction = "vertical") +
+  theme(legend.position = "none") +
+  guides(colour = guide_legend(ncol = 1))+
+  theme(axis.text.x=element_text(size=15,  family = "sans"), axis.text.y=element_text(size=15, face="bold", family = "sans"), axis.title.y=element_text(size=22, face="bold", family = "sans"), text=element_text(size=13, face="bold", family = "sans"))+
+  labs(y=expression(atop(bold("MDE (bpm)"), paste(bold("ECG"[HR]*"-Wearable"[HR]*"")))))+
+  theme(plot.margin=unit(c(1,1,1,1), "cm"))
+
+##+scale_fill_discrete(name = "Condition", labels = c("Consumer", "Research"))
+ggsave('filename', plot=last_plot(), device='png', height = 5 , width = 8)
+```
+
+
+```{r}
+
+library(ggplot2)
+
+hdf <- read.csv('figuredata_allconditionsabsolute.csv', header=TRUE, stringsAsFactors = FALSE)
+
+cols = c("#ADD8E6","#008080", '#808000', '#FF4500')
+
+hdf$Device <- factor(hdf$Device, levels=c("Apple Watch", "Fitbit", "Garmin","Miband", "Empatica", "Biovotion"))
+levels(hdf$Device) <- gsub(" ", "\n", levels(hdf$Device))
+
+g1 <- ggplot(hdf, aes(x=Device, y=Mean, fill=Activity, colour=Activity)) +
+  geom_point(size=7)+
+  geom_errorbar(aes(ymin=Mean-Error, ymax=Mean+Error, x=Device), size=.8, width=0.2)+
+  scale_colour_manual(values = cols)+ scale_fill_manual(values = cols)+
+  theme_bw()+
+  theme(panel.grid.minor = element_blank(),panel.grid.major = element_blank())+
+  geom_hline(yintercept = 0, color="green")+
+  theme(axis.title.x=element_blank())+
+  theme(legend.position="right", legend.direction = "vertical") +
+  #theme(legend.position = "none") +
+  guides(colour = guide_legend(ncol = 1))+
+  theme(axis.text.x=element_text(size=12,  family = "sans"), axis.text.y=element_text(size=15, face="bold", family = "sans"), axis.title.y=element_text(size=22, face="bold", family = "sans"), text=element_text(size=13, face="bold", family = "sans"))+
+  labs(y=expression(atop(bold("MAE (bpm)"), paste(bold("|ECG"[HR]*"-Wearable"[HR]*"|")))))+
+  theme(plot.margin=unit(c(1,1,1,1), "cm"))
+
+##+scale_fill_discrete(name = "Condition", labels = c("Consumer", "Research"))
+ggsave('filename', plot=last_plot(), device='png', height = 5 , width = 8)
+```
+
+```{r}
+
+library(ggplot2)
+
+hdf <- read.csv('figuredata_allconditionsrelative.csv', header=TRUE, stringsAsFactors = FALSE)
+
+cols = c("#ADD8E6","#008080", '#808000', '#FF4500')
+
+hdf$Device <- factor(hdf$Device, levels=c("Apple Watch", "Fitbit", "Garmin","Miband", "Empatica", "Biovotion"))
+levels(hdf$Device) <- gsub(" ", "\n", levels(hdf$Device))
+
+ggplot(hdf, aes(x=Device, y=Mean, fill=Activity, colour=Activity)) +
+  geom_point(size=7)+
+  geom_errorbar(aes(ymin=Mean-Error, ymax=Mean+Error, x=Device), size=.8, width=0.2)+
+  scale_colour_manual(values = cols)+ scale_fill_manual(values = cols)+
+  theme_bw()+
+  theme(panel.grid.minor = element_blank(),panel.grid.major = element_blank())+
+  geom_hline(yintercept = 0, color="green")+
+  theme(axis.title.x=element_blank())+
+  theme(legend.position="right", legend.direction = "vertical") +
+  #theme(legend.position = "none") +
+  guides(colour = guide_legend(ncol = 1))+
+  theme(axis.text.x=element_text(size=12,  family = "sans"), axis.text.y=element_text(size=15, face="bold", family = "sans"), axis.title.y=element_text(size=22, face="bold", family = "sans"), text=element_text(size=13, face="bold", family = "sans"))+
+  labs(y=expression(atop(bold("MDE (bpm)"), paste(bold("ECG"[HR]*"-Wearable"[HR]*"")))))+
+  theme(plot.margin=unit(c(1,1,1,1), "cm"))
+
+##+scale_fill_discrete(name = "Condition", labels = c("Consumer", "Research"))
+ggsave('filename', plot=last_plot(), device='png', height = 5 , width = 8)
+```
+
+```{r}
+library(ggplot2)
+
+hdf <- read.csv('figuredata_activitybaselineabsolute.csv', header=TRUE, stringsAsFactors = FALSE)
+
+cols = c("#FF4500","#008080")
+
+hdf$Device <- factor(hdf$Device, levels=c("Apple Watch", "Fitbit", "Garmin","Miband", "Empatica", "Biovotion"))
+levels(hdf$Device) <- gsub(" ", "\n", levels(hdf$Device))
+
+g1 <- ggplot(hdf, aes(x=Device, y=Mean, fill=Activity, colour=Activity)) +
+  geom_point(size=7)+
+  geom_errorbar(aes(ymin=Mean-Error, ymax=Mean+Error, x=Device), size=.8, width=0.2)+
+  scale_colour_manual(values = cols)+ scale_fill_manual(values = cols)+
+  theme_bw()+
+  theme(panel.grid.minor = element_blank(),panel.grid.major = element_blank())+
+  geom_hline(yintercept = 0, color="green")+
+  theme(axis.title.x=element_blank())+
+  #theme(legend.position="right", legend.direction = "vertical") +
+  theme(legend.position = "none") +
+  guides(colour = guide_legend(ncol = 1))+
+  theme(axis.text.x=element_text(size=15,  family = "sans"), axis.text.y=element_text(size=15, face="bold", family = "sans"), axis.title.y=element_text(size=22, face="bold", family = "sans"), text=element_text(size=13, face="bold", family = "sans"))+
+  labs(y=expression(atop(bold("MAE (bpm)"), paste(bold("|ECG"[HR]*"-Wearable"[HR]*"|")))))+
+  theme(plot.margin=unit(c(1,1,1,1), "cm"))
+
+
+
+#labs(y = expression("N-NO"[3]*" (??? vs air)"))
+
+ggsave('filename', plot=last_plot(), device='png', height = 5 , width = 8)
+```
+
+
+# Bar graphs with all skin tones and devices
+
+#Baseline:
+
+```{r}
+
+cdf <- read.csv('Barbase.csv', header=TRUE, stringsAsFactors = FALSE)
+
+cols = c("#ffdbac","#f1c27d","#e0ac69","#c68642","#7e4d1c","#3e2b13")
+
+cdf$WS <- factor(cdf$WS, levels=c("Apple Watch", "Fitbit", "Garmin","Miband", "Empatica", "Biovotion"))
+levels(cdf$WS) <- gsub(" ", "\n", levels(cdf$WS))
+
+cdf$Fitzpatrick <- as.factor(cdf$Fitzpatrick)
+
+library(ggplot2)
+ggplot(data=cdf, aes(x=WS, y=Mean, fill=Fitzpatrick)) +
+  geom_bar(stat="identity", position="dodge")+
+  scale_colour_manual(values = cols)+ scale_fill_manual(values = cols)+
+  theme_bw(base_size=15)+
+  theme(panel.grid.minor = element_blank(),panel.grid.major = element_blank())+ 
+  #theme(legend.position="right", legend.direction = "vertical")+
+  theme(legend.position = "none") +
+  theme(plot.margin=unit(c(1,1,1,1), "cm"))+ 
+  guides(colour = guide_legend(nrow = 1))+ theme(axis.title.x=element_blank())+
+  geom_errorbar(aes(ymin=Mean-Error, ymax=Mean+Error, x=WS), size=.3, width=0.3, position=position_dodge(.9))+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))+
+  ylim(0,32)+
+theme(axis.text.x=element_text(size=18,  family = "sans"), axis.text.y=element_text(size=18, face="bold", family = "sans"), axis.title.y=element_text(size=18, face="bold", family = "sans"), text=element_text(size=13, face="bold", family = "sans"))+
+  labs(y=expression(atop(bold("MAE: Rest (bpm)"), paste(bold("|ECG"[HR]*"-Wearable"[HR]*"|")))))
+
+ggsave('filename', plot=last_plot(), device='png')
+
+
+```
+
+#Activity:
+
+```{r}
+cdf <- read.csv('Baract.csv', header=TRUE, stringsAsFactors = FALSE)
+cols = c("#ffdbac","#f1c27d","#e0ac69","#c68642","#7e4d1c","#3e2b13")
+
+cdf$WS <- factor(cdf$WS, levels=c("Apple Watch", "Fitbit", "Garmin","Miband", "Empatica", "Biovotion"))
+levels(cdf$WS) <- gsub(" ", "\n", levels(cdf$WS))
+cdf$Fitzpatrick <- as.factor(cdf$Fitzpatrick)
+
+library(ggplot2)
+ggplot(data=cdf, aes(x=WS, y=Mean, fill=Fitzpatrick)) +
+  geom_bar(stat="identity", position="dodge")+
+  scale_colour_manual(values = cols)+ scale_fill_manual(values = cols)+
+  theme_bw(base_size=15)+
+  theme(panel.grid.minor = element_blank(),panel.grid.major = element_blank())+ 
+  #theme(legend.position="right", legend.direction = "vertical")+
+  theme(legend.position = "none") +
+  theme(plot.margin=unit(c(1,1,1,1), "cm"))+ 
+  guides(colour = guide_legend(nrow = 1))+ theme(axis.title.x=element_blank())+
+  geom_errorbar(aes(ymin=Mean-Error, ymax=Mean+Error, x=WS), size=.3, width=0.3, position=position_dodge(.9))+
+  ylim(0,32)+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))+
+theme(axis.text.x=element_text(size=18,  family = "sans"), axis.text.y=element_text(size=18, face="bold", family = "sans"), axis.title.y=element_text(size=18, face="bold", family = "sans"), text=element_text(size=13, face="bold", family = "sans"))+
+  labs(y=expression(atop(bold("MAE: Activity (bpm)"), paste(bold("|ECG"[HR]*"-Wearable"[HR]*"|")))))
+
+ggsave('filename', plot=last_plot(), device='png')
+```
+# Activity Absolute
+```{r}
+
+cff= read.csv('Baract_combined_absolute.csv', header=TRUE, stringsAsFactors = FALSE)
+
+cols = c("#ffdbac","#f1c27d","#e0ac69","#c68642","#7e4d1c","#3e2b13")
+
+cff$Fitzpatrick <- as.factor(cff$Fitzpatrick)
+
+library(ggplot2)
+ggplot(data=cff, aes(x=Fitzpatrick, y=MAE, fill=Fitzpatrick)) + 
+  geom_bar(stat="identity", position="dodge")+
+  scale_colour_manual(values = cols)+ scale_fill_manual(values = cols)+
+  theme_bw()+
+  theme(panel.grid.minor = element_blank(),panel.grid.major = element_blank())+ 
+  #theme(legend.position="right", legend.direction = "vertical")+
+  theme(legend.position = "none") +
+  labs(y=expression(atop(bold("MAE: Activity (bpm)"), paste(bold("|ECG"[HR]*"-Wearable"[HR]*"|")))))+
+  theme(plot.margin=unit(c(1,1,1,1), "cm")) + 
+  guides(colour = guide_legend(nrow = 1))+ 
+  theme(axis.title.x=element_blank())+
+  ylim(0,25)+
+  geom_errorbar(aes(ymin=MAE-Error, ymax=MAE+Error, x=Fitzpatrick), size=.3, width=0.3, position=position_dodge(.9))+
+  theme(axis.text.x=element_text(size=14,  face="bold",family = "sans"), axis.text.y=element_text(size=18, face="bold", family = "sans"), axis.title.y=element_text(size=18, face="bold", family = "sans"))
+  
+
+ggsave('filename', plot=last_plot(), device='png')
+
+
+```
+
+#Relative Activity
+
+```{r}
+
+cff= read.csv('Baract_combined_relative.csv', header=TRUE, stringsAsFactors = FALSE)
+
+cols = c("#ffdbac","#f1c27d","#e0ac69","#c68642","#7e4d1c","#3e2b13")
+
+cff$Fitzpatrick <- as.factor(cff$Fitzpatrick)
+
+library(ggplot2)
+ggplot(data=cff, aes(x=Fitzpatrick, y=MAE, fill=Fitzpatrick)) + 
+  geom_bar(stat="identity", position="dodge")+
+  scale_colour_manual(values = cols)+ scale_fill_manual(values = cols)+
+  theme_bw()+
+  theme(panel.grid.minor = element_blank(),panel.grid.major = element_blank())+ 
+  #theme(legend.position="right", legend.direction = "vertical")+
+  theme(legend.position = "none") +
+  labs(y=expression(atop(bold("MDE: Activity (bpm)"), paste(bold("ECG"[HR]*"-Wearable"[HR]*"")))))+
+  theme(plot.margin=unit(c(1,1,1,1), "cm")) + 
+  guides(colour = guide_legend(nrow = 1))+ 
+  theme(axis.title.x=element_blank())+
+  ylim(0,25)+
+  geom_errorbar(aes(ymin=MAE-Error, ymax=MAE+Error, x=Fitzpatrick), size=.3, width=0.3, position=position_dodge(.9))+
+  theme(axis.text.x=element_text(size=14,  face="bold",family = "sans"), axis.text.y=element_text(size=18, face="bold", family = "sans"), axis.title.y=element_text(size=18, face="bold", family = "sans"))
+  
+
+ggsave('filename', plot=last_plot(), device='png')
+
+
+```
+
+#Absolute Baseline
+```{r}
+
+cff= read.csv('Barbase_combined_absolute.csv', header=TRUE, stringsAsFactors = FALSE)
+
+cols = c("#ffdbac","#f1c27d","#e0ac69","#c68642","#7e4d1c","#3e2b13")
+
+cff$Fitzpatrick <- as.factor(cff$Fitzpatrick)
+
+library(ggplot2)
+ggplot(data=cff, aes(x=Fitzpatrick, y=MAE, fill=Fitzpatrick)) + 
+  geom_bar(stat="identity", position="dodge")+
+  scale_colour_manual(values = cols)+ scale_fill_manual(values = cols)+
+  theme_bw()+
+  theme(panel.grid.minor = element_blank(),panel.grid.major = element_blank())+ 
+  #theme(legend.position="right", legend.direction = "vertical")+
+  theme(legend.position = "none") +
+  labs(y=expression(atop(bold("MAE: Rest (bpm)"), paste(bold("|ECG"[HR]*"-Wearable"[HR]*"|")))))+
+  theme(plot.margin=unit(c(1,1,1,1), "cm")) + 
+  guides(colour = guide_legend(nrow = 1))+ 
+  ylim(0,25)+
+  theme(axis.title.x=element_blank())+
+  geom_errorbar(aes(ymin=MAE-Error, ymax=MAE+Error, x=Fitzpatrick), size=.3, width=0.3, position=position_dodge(.9))+
+  theme(axis.text.x=element_text(size=14,  face="bold", family = "sans"), axis.text.y=element_text(size=18, face="bold", family = "sans"), axis.title.y=element_text(size=18, face="bold", family = "sans"))
+  
+
+ggsave('filename', plot=last_plot(), device='png')
+
+
+```
+
+
+# Relative Baseline
+```{r}
+
+cff= read.csv('Barbase_combined_relative.csv', header=TRUE, stringsAsFactors = FALSE)
+
+cols = c("#ffdbac","#f1c27d","#e0ac69","#c68642","#7e4d1c","#3e2b13")
+
+cff$Fitzpatrick <- as.factor(cff$Fitzpatrick)
+
+library(ggplot2)
+ggplot(data=cff, aes(x=Fitzpatrick, y=MAE, fill=Fitzpatrick)) + 
+  geom_bar(stat="identity", position="dodge")+
+  scale_colour_manual(values = cols)+ scale_fill_manual(values = cols)+
+  theme_bw()+
+  theme(panel.grid.minor = element_blank(),panel.grid.major = element_blank())+ 
+  #theme(legend.position="right", legend.direction = "vertical")+
+  theme(legend.position = "none") +
+  labs(y=expression(atop(bold("MDE: Rest (bpm)"), paste(bold("ECG"[HR]*"-Wearable"[HR]*"")))))+
+  theme(plot.margin=unit(c(1,1,1,1), "cm")) + 
+  guides(colour = guide_legend(nrow = 1))+ 
+  theme(axis.title.x=element_blank())+
+  geom_errorbar(aes(ymin=MAE-Error, ymax=MAE+Error, x=Fitzpatrick), size=.3, width=0.3, position=position_dodge(.9))+
+  theme(axis.text.x=element_text(size=14,  face="bold", family = "sans"), axis.text.y=element_text(size=18, face="bold", family = "sans"), axis.title.y=element_text(size=18, face="bold", family = "sans"))
+  
+
+ggsave('filename', plot=last_plot(), device='png')
+
+
+```

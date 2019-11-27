@@ -1,0 +1,224 @@
+---
+title: "MixedEffectsModel_Window"
+author: "BrinnaeBent"
+date: "September 20, 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#Summary of models below:
+
+
+```{r}
+df <- read.csv("filepath\filename_from-Signal_Lag_Rolling_Window", header=FALSE, stringsAsFactors = FALSE)
+colnames(df) <- c("ID", "Device", "Condition", "WindowLengthMAE", "MAE", "WindowLengthME", "ME", "SkinTone")
+
+```
+
+## Mean Absolute Error (MAE) Models:
+
+
+### Full Model
+
+```{r}
+
+# Model for All variables - Rolling Window
+library(lme4)
+
+model = lmer(MAE ~ SkinTone + Device + Condition + WindowLengthMAE + (1|ID), data=df, REML=FALSE)
+model.null = lmer(MAE ~ 1 + (1|ID), data=df, REML=FALSE)
+
+summary(model)
+#summary(model.null)
+anovatotal = anova(model.null, model)
+print(anovatotal)
+
+```
+
+### Window Length Model
+
+```{r}
+
+# Model for Window Length
+library(lme4)
+
+modelW = lmer(MAE ~ WindowLengthMAE + (1|ID), data=df, REML=FALSE)
+model.nullW = lmer(MAE ~ 1 + (1|ID), data=df, REML=FALSE)
+
+summary(modelW)
+#summary(model.nullW)
+anovaW = anova(model.nullW, modelW)
+print(anovaW)
+
+```
+
+### Skin Tone Model
+
+```{r}
+
+# Model for SkinTone
+library(lme4)
+
+modelFST = lmer(MAE ~ SkinTone + (1|ID), data=df, REML=FALSE)
+model.nullFST = lmer(MAE ~ 1 + (1|ID), data=df, REML=FALSE)
+
+summary(modelFST)
+#summary(model.nullFST)
+anovaFST = anova(model.nullFST, modelFST)
+print(anovaFST)
+
+```
+
+### Device Model
+
+```{r}
+
+# Model for Device
+library(lme4)
+
+modelD = lmer(MAE ~ Device + (1|ID), data=df, REML=FALSE)
+model.nullD = lmer(MAE ~ 1 + (1|ID), data=df, REML=FALSE)
+
+summary(modelD)
+#summary(model.nullD)
+anovaD = anova(model.nullD, modelD)
+print(anovaD)
+
+```
+
+### Condition Model
+
+```{r}
+
+# Model for Condition
+library(lme4)
+
+modelC = lmer(MAE ~ Condition + (1|ID), data=df, REML=FALSE)
+model.nullC = lmer(MAE ~ 1 + (1|ID), data=df, REML=FALSE)
+
+summary(modelC)
+#summary(model.nullC)
+anovaC = anova(model.nullC, modelC)
+print(anovaC)
+
+```
+
+### Interaction Model - Skin Tone and Window Length
+
+```{r}
+
+# Interaction Model between Skin Tone and Window Length
+library(lme4)
+library(lmtest)
+
+modelI = lmer(MAE ~ SkinTone*WindowLengthMAE + (1|ID), data=df, REML=FALSE)
+modelI2 = lmer(MAE ~ SkinTone + WindowLengthMAE + (1|ID), data=df, REML=FALSE)
+
+lrtest(modelI, modelI2)
+
+```
+
+## All tests repeated for Mean Error (ME):
+
+
+### Full Model
+
+```{r}
+
+# Model for All variables - Rolling Window
+library(lme4)
+
+model = lmer(ME ~ SkinTone + Device + Condition + WindowLengthME + (1|ID), data=df, REML=FALSE)
+model.null = lmer(ME ~ 1 + (1|ID), data=df, REML=FALSE)
+
+summary(model)
+#summary(model.null)
+anovatotal = anova(model.null, model)
+print(anovatotal)
+
+```
+
+### Window Length Model
+
+```{r}
+
+# Model for Window Length
+library(lme4)
+
+modelW = lmer(ME ~ WindowLengthME + (1|ID), data=df, REML=FALSE)
+model.nullW = lmer(ME ~ 1 + (1|ID), data=df, REML=FALSE)
+
+summary(modelW)
+#summary(model.nullW)
+anovaW = anova(model.nullW, modelW)
+print(anovaW)
+
+```
+
+### Skin Tone Model
+
+```{r}
+
+# Model for SkinTone
+library(lme4)
+
+modelFST = lmer(ME ~ SkinTone + (1|ID), data=df, REML=FALSE)
+model.nullFST = lmer(ME ~ 1 + (1|ID), data=df, REML=FALSE)
+
+summary(modelFST)
+#summary(model.nullFST)
+anovaFST = anova(model.nullFST, modelFST)
+print(anovaFST)
+
+```
+
+### Device Model
+
+```{r}
+
+# Model for Device
+library(lme4)
+
+modelD = lmer(ME ~ Device + (1|ID), data=df, REML=FALSE)
+model.nullD = lmer(ME ~ 1 + (1|ID), data=df, REML=FALSE)
+
+summary(modelD)
+#summary(model.nullD)
+anovaD = anova(model.nullD, modelD)
+print(anovaD)
+
+```
+
+### Condition Model 
+
+```{r}
+
+# Model for Condition
+library(lme4)
+
+modelC = lmer(ME ~ Condition + (1|ID), data=df, REML=FALSE)
+model.nullC = lmer(ME ~ 1 + (1|ID), data=df, REML=FALSE)
+
+summary(modelC)
+#summary(model.nullC)
+anovaC = anova(model.nullC, modelC)
+print(anovaC)
+
+```
+### Interaction Model - Skin Tone and Window Length
+
+```{r}
+
+# Interaction Model between Skin Tone and Window Length
+library(lme4)
+library(lmtest)
+
+modelI = lmer(ME ~ SkinTone*WindowLengthME + (1|ID), data=df, REML=FALSE)
+modelI2 = lmer(ME ~ SkinTone + WindowLengthME + (1|ID), data=df, REML=FALSE)
+
+lrtest(modelI, modelI2)
+
+```

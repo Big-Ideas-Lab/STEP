@@ -1,0 +1,130 @@
+---
+title: "Signal_Lag_Combined"
+author: "BrinnaeBent"
+date: "November 27, 2019"
+output: html_document
+---
+
+### Function for Rolling Window
+```{r}
+
+RollingWindowAnalysis <- function(pid, test, device, seconds, condition, z, v, ST){
+
+# Set width in terms of data
+factor = 1.55 #(SR of ECG) 
+width=factor*seconds
+
+#Rolling Window Mean
+library(zoo)
+x1 <- rollapply(z, width=width, FUN=function(x) mean(x,na.rm=TRUE))
+x2 <- rollapply(v, width=width, FUN=function(x) mean(x,na.rm=TRUE))
+data <- data.frame(x1, x2)
+
+#Difference function 
+ME_diff <- data$x1 - data$x2
+MAE_diff <- abs(data$x1-data$x2)
+
+#Mean Error and Mean Absolute Error
+ME <- mean(ME_diff, na.rm=TRUE)
+MAE <- mean(MAE_diff, na.rm=TRUE)
+
+result <- data.frame(pid, device, condition, ST, seconds, MAE, ME)
+colnames(result) <- c("ID", "Device", "Condition", "SkinTone", "Window Length (sec)", "MAE", "ME")
+
+
+write.table(result, file = "filename.csv", sep = ",", append = TRUE, quote = FALSE, col.names = FALSE, row.names = FALSE)
+
+
+}
+```
+
+### Import data, add column names, separate out data frame with unique ID's and their respective skin tones
+
+```{r}
+df <- read.csv('filename_from Import_Raw_Data_Merge', header=TRUE, stringsAsFactors = FALSE)
+colnames(df) <- c("Time", "ECG", "AppleWatch", "Empatica", "Garmin", "Fitbit", "Miband", "Biovotion", "ID", "SkinTone", "Condition")
+
+IDST <- data.frame(df$ID, df$SkinTone)
+subFST <- unique(IDST)
+colnames(subFST) <- c("ID", "SkinTone")
+```
+
+# Run through model, set device, define window sizes and conditions,
+
+```{r}
+
+#TO RUN: Only need to change device below and device in test$ in function call below:
+
+device = "AppleWatch"  #AppleWatch, Fitbit, Garmin, Miband, Empatica, Biovotion
+
+
+
+#Conditions
+condition = c("Rest", "Activity") 
+
+# Window Sizes
+windows <- c(5,10,20,30,40,50,60,90,120,150,180,210,240)
+
+
+for (c in 1:length(condition)){ #Through both conditions Rest and Activity
+  for (i in 1:nrow(subFST)){ #Through all subjects
+      for (w in 1:length(windows)){ #Through all window sizes
+        test <- df[df$ID %in% subFST$ID[i] & df$Condition %in% condition[c],]
+        RollingWindowAnalysis(subFST$ID[i], test, device, windows[w], condition[c], test$ECG, test$AppleWatch, subFST$SkinTone[i])
+      }
+  }
+}
+```
+
+# Signal Lag Analysis Component:
+
+```{r}
+df <- read.csv("filepath/filename_fromabove", header=FALSE, stringsAsFactors = FALSE)
+colnames(df) <- c("ID", "Device", "Condition", "SkinTone", "WindowLength", "MAE", "ME")
+
+subIDS <- unique(df$ID)
+
+IDST <- data.frame(df$ID, df$SkinTone)
+subFST <- unique(IDST)
+colnames(subFST) <- c("ID", "SkinTone")
+
+```
+
+# Generate Optimal Window length MAE and ME values for updated model:
+
+```{r}
+condition = c("Rest", "Activity") 
+device = c("AppleWatch", "Fitbit", "Garmin", "Miband", "Empatica", "Biovotion")
+
+result <- data.frame(matrix())
+
+for (d in 1:length(device)){ # Through all devices
+  for (c in 1:length(condition)){ #Through both conditions Rest and Activity
+    for (i in 1:length(subIDS)){ #Through all subjects
+        test <- df[df$ID %in% subIDS[i] & df$Condition %in% condition[c] & df$Device %in% device[d],]
+        
+        MAEmin <- min(test$MAE)
+        MEmin <- min(test$ME)
+
+        if (is.na(MAEmin)==TRUE){
+          windowMAEmin <- NA
+        } else{
+          MAEminindex <- which.min(test$MAE)
+          windowMAEmin <- test$WindowLength[MAEminindex]
+        }
+        
+        if (is.na(MEmin)==TRUE){
+          windowMEmin <- NA
+        } else{
+          MEminindex <- which.min(test$ME)
+          windowMEmin <- test$WindowLength[MEminindex]
+        }
+        
+        result <- data.frame(subIDS[i], device[d], condition[c],windowMAEmin, MAEmin, windowMEmin, MEmin, subFST$SkinTone[i])
+        
+        write.table(result, file = "Optimized_Window_STEP.csv", sep = ",", append = TRUE, quote = FALSE, col.names = FALSE, row.names = FALSE)
+      
+    }
+  }
+}
+```
