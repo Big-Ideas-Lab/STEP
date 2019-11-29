@@ -1,0 +1,27 @@
+---
+title: "PowerAnalysis_STEP"
+author: "BrinnaeBent"
+date: "August 29, 2019"
+output: html_document
+---
+
+```{r}
+# Alpha = 0.5, Power = 0.8
+#Effect size = medium, 0.3
+
+library(pwr)
+
+anova_modal = pwr.anova.test(k=6, f=0.3, sig.level=0.5,power=0.8)
+
+```
+
+```{r}
+# Number of predictors = 16 (6 skin tones, 6 device, 4 activity types)
+# Alpha = 0.5, Power = 0.8
+# f2=0.15, medium effect size, equivalent to ~0.3 effect size above.
+
+mr_model = pwr.f2.test(u=15, v=NULL, f2=0.15, sig.level=0.5, power=0.8)
+
+n = mr_model$v + 16
+```
+
