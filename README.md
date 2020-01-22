@@ -5,6 +5,8 @@ This is the supporting code for the manuscript:
 **Investigating Sources of Inaccuracy in Wearable Optical Heart Rate Sensors**
 
 Authors: Brinnae Bent, Benjamin A. Goldstein, Warren A. Kibbe, Jessilyn P. Dunn
+
+Link to publication: Coming soon
 ***
 
 * Import_Raw_Data_Merge_csv.Rmd - Writes large .csv that contains all data for all participants, devices, and activities
